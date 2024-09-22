@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Specification-Title: ic2p
+Specification-Vendor: Marc41o
+Specification-Version: 1
+Implementation-Title: Forge_MDK
+Implementation-Version: 1.0
+Implementation-Vendor: Marc41o
+
