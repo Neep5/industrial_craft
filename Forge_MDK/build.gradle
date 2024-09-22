@@ -1,0 +1,93 @@
+plugins { 
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+
+version = '1.0'  // Версия мода
+group = 'com.marc41o.ic2p'  // Уникальный идентификатор проекта
+
+base {
+    archivesName = 'ic2p'  // Название мода
+}
+
+// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+minecraft {
+    // Настройка версий mappings
+    mappings channel: 'official', version: '1.21.1'
+    reobf = false
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', 'ic2p'
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', 'ic2p'
+            args '--nogui'
+        }
+
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', 'ic2p'
+        }
+
+        data {
+            workingDirectory project.file('run-data')
+            args '--mod', 'ic2p', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    // Forge Maven репозиторий уже добавлен по умолчанию
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.21.1-52.0.0"
+    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
+}
+
+// Настройка для задачи processResources с добавленной стратегией исключения дубликатов
+tasks.named('processResources').configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE  // Игнорируем дубликаты
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.toml', '**/*.mcmeta'
+        expand(
+            minecraft_version: '1.21.1',
+            forge_version: '52.0.0',
+            mod_id: 'ic2p',
+            mod_name: 'IC2P',
+            mod_license: 'MIT',
+            mod_version: '1.0',
+            mod_authors: 'Marc41o',
+            mod_description: 'IndustrialCraft 2 Ported to Minecraft 1.21.1',
+            loader_version_range: '[6.0,6.2)'
+        )
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            'Specification-Title'     : 'ic2p',
+            'Specification-Vendor'    : 'Marc41o',
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : 'Marc41o'
+        ])
+    }
+}
